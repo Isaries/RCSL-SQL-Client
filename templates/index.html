@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCSL SQL Client</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- CSS -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <header>
+        <div class="logo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
+                </path>
+            </svg>
+            RCSL SQL Client
+        </div>
+        <div class="user-info">
+            Logged in as <strong>RCSL</strong>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" id="historyHeader" style="cursor: pointer; user-select: none;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <svg class="chevron-icon" width="16" height="16" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24" style="transition: transform 0.3s;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <span>History</span>
+                </div>
+                <span style="font-size: 0.7rem; color: var(--text-secondary);">(Local)</span>
+            </div>
+            <div class="history-list" id="historyList">
+                <!-- History Items go here -->
+            </div>
+
+            <!-- Quick Access Section -->
+            <div class="sidebar-header">
+                <span>Quick Access</span>
+                <button id="addTableBtn" class="icon-btn" title="Add Table">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="history-list" id="quickAccessList">
+                <!-- Quick Access Items go here -->
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main>
+            <div class="editor-section">
+                <div class="sql-editor-container">
+                    <textarea id="sqlInput"
+                        placeholder="Enter your SQL query here... (e.g. SELECT * FROM users)"></textarea>
+                    <div class="editor-actions">
+                        <button class="btn btn-secondary" id="clearBtn">Clear</button>
+                        <button class="btn btn-primary" id="runBtn">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Run Query
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="results-header">
+                    <h3>Results</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span id="statusText" class="status-indicator">Ready</span>
+                        <button id="fullscreenBtn" class="icon-btn" title="Toggle Fullscreen">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <div class="empty-state">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            style="margin-bottom: 1rem; opacity: 0.5;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
+                            </path>
+                        </svg>
+                        <p>Run a query to see results here</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for custom SQL -->
+    <div id="quickAccessModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add Quick Access</h3>
+                <button id="closeModalBtn" class="icon-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="qaNameInput" placeholder="e.g. Active Users">
+                </div>
+                <div class="form-group">
+                    <label>SQL Command</label>
+                    <textarea id="qaSqlInput" placeholder="SELECT * FROM table..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveQuickAccessBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="errorToast" class="error-toast">Error message</div>
+
+    <script src="{{ url_for('static', filename='script.js') }}?v=14"></script>
+</body>
+
+</html>
