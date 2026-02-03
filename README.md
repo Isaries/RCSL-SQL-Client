@@ -29,7 +29,7 @@ There are two ways to use this application: running the standalone executable or
 
 This method does not require Python to be installed on your system.
 
-1.  **Download**: Obtain the `RCSL-SQL-Client.exe` file from the repository's Releases page or the `dist` folder if built locally.
+1.  **Download**: Obtain the latest `RCSL-SQL-Client.exe` from the [Releases Page](../../releases/latest).
 2.  **Run**: Double-click the executable file.
 3.  **Setup**:
     -   The application will automatically open your default web browser.

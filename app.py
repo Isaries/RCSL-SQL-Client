@@ -9,7 +9,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+# Resource Path Helper for PyInstaller (bundled files)
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    if getattr(sys, 'frozen', False):
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
+if getattr(sys, 'frozen', False):
+    app = Flask(__name__, 
+                template_folder=resource_path('templates'),
+                static_folder=resource_path('static'))
+else:
+    app = Flask(__name__)
 
 # Configuration
 import sys
@@ -321,8 +336,15 @@ def delete_quick_access(id):
     return jsonify({'status': 'deleted'})
 
 if __name__ == '__main__':
-    check_write_permission()
-    app.run(debug=True, port=5000)
+    try:
+        check_write_permission()
+        app.run(debug=True, port=5000)
+    except Exception as e:
+        import traceback
+        error_msg = traceback.format_exc()
+        if os.name == 'nt':
+            ctypes.windll.user32.MessageBoxW(0, u"程式發生錯誤無法啟動：\n\n" + error_msg, u"啟動錯誤", 0x10)
+        raise e
 
 # Connection Profiles API
 @app.route('/api/connections', methods=['GET'])
