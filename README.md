@@ -9,7 +9,7 @@ Intended for users who may not be familiar with command-line operations, allowin
 Please download and install Python (version 3.8 or higher is recommended).
 - **Download Link**: [Python Official Website](https://www.python.org/downloads/)
 - **Important**: During installation, make sure to check **"Add Python to PATH"** (as shown below), otherwise the script will not run.
-  ![Add to PATH](https://miro.medium.com/v2/resize:fit:1400/1*C5yUaWzP9qA1qQc9Qc9Qc9.png)
+  ![Add to PATH](static/add_to_path.png)
 
 ### 2. Download and Run
 1. Download this project (Click the green **Code** button -> **Download ZIP**) and extract it to your Desktop.
