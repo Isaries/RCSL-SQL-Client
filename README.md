@@ -8,22 +8,22 @@ The RCSL SQL Client abstracts the complexity of manually crafting API requests. 
 
 Key features include:
 - **Web-Based Interface**: A modern, clean interface accessible via any web browser.
-- **Secure Configuration**: Credentials are stored locally in a `.env` file and are never exposed in the source code or URL parameters.
-- **Setup Wizard**: A user-friendly graphical interface for initial configuration, eliminating the need to edit configuration files manually.
+- **Secure Configuration**: Credentials are stored locally in a hidden configuration file and are never exposed in the source code or URL parameters.
+- **Setup Wizard**: A user-friendly graphical interface for initial configuration.
 - **Query History**: Automatically logs all executed queries locally for easy retrieval.
-- **Quick Access**: Allows users to save frequently used queries with custom names and reorder them via drag-and-drop.
-- **Editable Grid**: Supports inline editing, row duplication, and deletion for simple tables (automatically detected).
+- **Quick Access**: Allows users to save frequently used queries with custom names and reorder them.
+- **Editable Grid**: Supports inline editing, row duplication, and deletion for simple tables.
 - **Standalone Support**: Can be built into a single executable file for usage without a Python installation.
 
 ## Installation and Usage
 
 There are two ways to use this application: running the standalone executable or running from the source code.
 
-> [!WARNING]
-> **⚠️ 唯一要注意的限制 (權限問題)**
-> 因為我們的設定檔 (`.env`) 和資料庫 (`local_data.db`) 是存在程式同一個資料夾下。
-> **建議**：請把 `.exe` 放在 **桌面** 或 **我的文件** 這種有寫入權限的地方。
-> **避免**：不要直接放在 `C:\Program Files` 這種需要管理員權限的地方，否則可能會因為無法存檔而報錯。
+> **Important Limitation (Permission Issues)**
+>
+> Since configuration files and local databases are stored in the same directory as the application, please place the executable in a writable directory such as **Desktop** or **Documents**.
+>
+> Avoid directories like `C:\Program Files` as restricted write permissions may cause errors when saving configuration or history.
 
 ### Method 1: Standalone Executable (Recommended)
 
@@ -51,7 +51,7 @@ This method requires Python installed on your system.
 2.  **Launch**:
     -   Navigate to the project folder.
     -   Double-click the `run.bat` script.
-    -   The script will automatically set up a virtual environment, install necessary dependencies (`requirements.txt`), and launch the application.
+    -   The script will automatically set up a virtual environment, install necessary dependencies, and launch the application.
 3.  **Configuration**: Follow the same on-screen Setup Wizard as described in Method 1.
 
 ## Features in Detail
@@ -63,7 +63,7 @@ The main interface features a text area for inputting standard SQL queries.
 -   Support for keyboard shortcuts (Ctrl+Enter to run).
 
 ### Query History
-Every successfully executed query is saved to a local SQLite database (`local_data.db`).
+Every successfully executed query is saved to a local SQLite database.
 -   The history list is displayed in the sidebar.
 -   Clicking a history item inserts it back into the editor.
 -   Individual history items can be deleted.
@@ -76,42 +76,33 @@ A section in the sidebar for storing favorite or complex queries.
 -   **Context**: Ideal for storing daily reports or complex JOIN queries.
 
 ### Editable Grid
-When a `SELECT` query returns data from a single table and includes a unique `id` column, the application automatically enables "Edit Mode".
--   **Inline Editing**: Click any cell to edit its value. Changes are saved immediately upon blurring the field (Enter or click away).
+When a SELECT query returns data from a single table and includes a unique ID column, the application automatically enables "Edit Mode".
+-   **Inline Editing**: Click any cell to edit its value. Changes are saved immediately upon blurring the field.
 -   **Add Row**: Click the "Add Row" button to insert a new record.
--   **Duplicate**: Click the copy icon on a row to duplicate its data into a new insertion form.
--   **Delete**: Click the trash icon to remove a row (requires confirmation).
+-   **Duplicate**: Click the copy icon on a row to duplicate its data.
+-   **Delete**: Click the trash icon to remove a row.
 
 **Note**: Read-only mode is enforced for queries involving JOINs, lacking an ID column, or using aggregate functions.
 
 ## Development and Building
 
 ### Project Structure
--   `app.py`: The main Flask backend application. Handles API requests and database logic.
+-   `app.py`: The main Flask backend application.
 -   `static/`: Contains CSS, JavaScript, and asset files.
-    -   `script.js`: Frontend logic, API handling, and UI interactions.
-    -   `style.css`: Application styling.
--   `templates/`: Contains HTML templates (`index.html`).
+-   `templates/`: Contains HTML templates.
 -   `run.bat`: Helper script for one-click startup.
 -   `build_exe.bat`: Script to package the application using PyInstaller.
 
 ### Building the Executable
-To create a standalone `.exe` file from the source code:
+To create a standalone executable file from the source code:
 
 1.  Ensure you have Python installed.
 2.  Double-click `build_exe.bat`.
-3.  The script will install `pyinstaller` and `Pillow` if missing.
-4.  It will package the application into a single file.
-5.  The output file `RCSL-SQL-Client.exe` will be located in the `dist` folder.
+3.  The script will install specific dependencies and package the application.
+4.  The output file `RCSL-SQL-Client.exe` will be located in the `dist` folder.
 
 ### Continuous Integration
 This repository is configured with GitHub Actions.
--   Every push to the `main` branch triggers an automated build workflow.
+-   Every push to the `main` branch or tag creation triggers an automated build workflow.
 -   The workflow sets up the environment, installs dependencies, and builds the executable.
--   The resulting artifact is available for download in the Actions tab of the repository.
 
-## Troubleshooting
-
--   **Application closes immediately**: Ensure no other application is using port 5000.
--   **Configuration Error**: If you entered the wrong credentials, you can reset them by deleting the `.env` file in the application directory and restarting the program.
--   **Build Failures**: Ensure you have internet access and write permissions in the directory when running `build_exe.bat`.
