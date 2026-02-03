@@ -142,6 +142,36 @@
         </div>
     </div>
 
+    <!-- Modal for Setup (First Run) -->
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Initial Setup</h3>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                    Welcome! Please configure the RCSL API connection to continue.
+                </p>
+                <div class="form-group">
+                    <label>API URL</label>
+                    <input type="text" id="setupApiUrl" value="https://api.rcsl.online/sqlCommand"
+                        placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Username (RCSL)</label>
+                    <input type="text" id="setupUser" placeholder="Username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="setupPass" placeholder="Password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveSetupBtn" style="width: 100%;">Connect & Save</button>
+            </div>
+        </div>
+    </div>
+
     <div id="errorToast" class="error-toast">Error message</div>
 
     <script src="{{ url_for('static', filename='script.js') }}?v=14"></script>

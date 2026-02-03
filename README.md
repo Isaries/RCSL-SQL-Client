@@ -1,58 +1,59 @@
 # RCSL SQL Client
 
-A lightweight SQL client designed for securely connecting to the RCSL remote database.
-Intended for users who may not be familiar with command-line operations, allowing you to get started in just a few steps.
+一個專為 RCSL 遠端資料庫設計的輕量級 SQL 客戶端。
+特別優化了使用體驗，讓不熟悉程式操作的用戶也能輕鬆上手。
 
-## Quick Start
+## 🚀 快速開始 (Quick Start)
 
-### 1. Install Python (if not already installed)
-Please download and install Python (version 3.8 or higher is recommended).
-- **Download Link**: [Python Official Website](https://www.python.org/downloads/)
-- **Important**: During installation, make sure to check **"Add Python to PATH"** (as shown below), otherwise the script will not run.
-  ![Add to PATH](static/add_to_path.png)
+### 方法一：直接運行 (推薦)
+如果你拿到了 `RCSL-SQL-Client.exe` 檔案：
+1. 直接點擊該檔案。
+2. 瀏覽器會自動開啟。
+3. 如果是第一次使用，會跳出設定視窗，請輸入你的 RCSL 帳號密碼即可。
 
-### 2. Download and Run
-1. Download this project (Click the green **Code** button -> **Download ZIP**) and extract it to your Desktop.
-2. Open the folder and find the `run.bat` file.
-3. **Double-click `run.bat`**.
+### 方法二：使用源代碼運行
+如果你是下載了整個資料夾：
 
-### 3. Setup Credentials (First Run)
-If this is your first time running the program, it will automatically create a `.env` configuration file and ask you to pause.
-1. Open the `.env` file in the folder using Notepad.
-2. Enter your RCSL username and password:
-   ```env
-   # .env file example
-   API_URL="https://api.rcsl.online/sqlCommand"
-   DEFAULT_USER="your_username"
-   DEFAULT_PASS="your_password"
-   ```
-3. Save and close Notepad.
-4. Double-click `run.bat` again to start the application.
+1. **安裝 Python** (如果尚未安裝)
+   - 請至 [Python 官網](https://www.python.org/downloads/) 下載並安裝。
+   - **重要**：安裝時請務必勾選 **"Add Python to PATH"**。
 
----
+2. **啟動程式**
+   - 在資料夾中找到 `run.bat`。
+   - **連點兩下** 即可。
+   - 程式會自動安裝所需的套件並開啟網頁。
 
-## User Guide
-- Once started, the program will automatically open your browser and navigate to the interface.
-- **Do not close the black command window**, or the website will stop working.
-- To exit the program, simply close the command window.
-
-## Key Features
-- **Remote Connection**: Securely connect to the RCSL database to execute queries.
-- **History**: Automatically saves executed SQL commands for easy retrieval.
-- **Quick Access**: Save frequently used commands to the "Quick Access" list.
-- **Security**: Credentials are stored locally in the `.env` file and are never uploaded to the internet.
+3. **初始設定**
+   - 瀏覽器打開後，如果是第一次使用，會自動彈出「Initial Setup」視窗。
+   - 輸入 API 網址 (預設已填好)、帳號、密碼。
+   - 點擊 **Connect & Save**。
 
 ---
 
-## Advanced Usage (Developers)
-If you are familiar with the command line, you can also run it using the standard method:
+## ✨ 主要功能
+- **網頁圖形介面**：不需要打指令，操作直觀。
+- **安全憑據管理**：帳號密碼只會保存在你電腦本地 (`.env`)，不會上傳。
+- **歷史紀錄 (History)**：自動儲存執行過的 SQL 指令。
+- **快速存取 (Quick Access)**：可儲存常用的 SQL 指令，支援拖拉排序。
+- **防止手殘**：刪除資料前會有確認提示。
+
+## 🛠️ 進階功能 (給開發者/進階用戶)
+
+### 製作獨立執行檔 (.exe)
+如果你想把並且分享給朋友（讓他們不用安裝 Python），可以使用內建的打包腳本：
+1. 點擊 `build_exe.bat`。
+2. 等待程式跑完。
+3. 在 `dist` 資料夾中會生成一個 `RCSL-SQL-Client.exe`。
+
+### 手動運行
+如果你習慣使用終端機：
 ```bash
-# Create virtual environment
+# 建立虛擬環境
 python -m venv venv
-# Activate virtual environment (Windows)
+# 啟動虛擬環境
 .\venv\Scripts\activate
-# Install dependencies
+# 安裝依賴
 pip install -r requirements.txt
-# Run application
+# 執行
 python app.py
 ```

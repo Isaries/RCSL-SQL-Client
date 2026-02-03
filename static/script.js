@@ -58,12 +58,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ids })
             });
+        },
+        async checkStatus() {
+            const res = await fetch('/api/status');
+            return await res.json();
+        },
+        async saveSetup(apiUrl, username, password) {
+            const res = await fetch('/api/setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_url: apiUrl, username, password })
+            });
+            if (!res.ok) throw new Error('Failed to save setup');
+            return await res.json();
         }
     };
 
     // Initialize Data
-    loadHistory();
-    loadQuickAccess();
+    // Initialize Data
+    initializeApp();
+
+    async function initializeApp() {
+        try {
+            const status = await API.checkStatus();
+            if (!status.configured) {
+                showSetupModal(true);
+            } else {
+                loadHistory();
+                loadQuickAccess();
+            }
+        } catch (e) {
+            console.error("Failed to check status", e);
+            // Fallback try loading anyway
+            loadHistory();
+            loadQuickAccess();
+        }
+    }
 
     // --- Collapsible History Logic ---
     const historyHeader = document.getElementById('historyHeader');
@@ -798,6 +828,50 @@ document.addEventListener('DOMContentLoaded', () => {
         newSaveBtn.addEventListener('click', handler);
         return newSaveBtn;
     }
+
+    // --- Setup Wizard Logic ---
+    const setupModal = document.getElementById('setupModal');
+    const saveSetupBtn = document.getElementById('saveSetupBtn');
+
+    function showSetupModal(show) {
+        if (show) setupModal.classList.add('active');
+        else setupModal.classList.remove('active');
+    }
+
+    saveSetupBtn.addEventListener('click', async () => {
+        const apiUrl = document.getElementById('setupApiUrl').value.trim();
+        const user = document.getElementById('setupUser').value.trim();
+        const pass = document.getElementById('setupPass').value.trim();
+
+        if (!apiUrl || !user || !pass) {
+            alert("Please fill in all fields.");
+            return;
+        }
+
+        try {
+            saveSetupBtn.textContent = 'Connecting...';
+            saveSetupBtn.disabled = true;
+
+            await API.saveSetup(apiUrl, user, pass);
+
+            showSetupModal(false);
+            loadHistory();
+            loadQuickAccess();
+
+            errorToast.style.backgroundColor = '#4caf50'; // Green
+            errorToast.textContent = "Setup Complete!";
+            errorToast.classList.add('show');
+            setTimeout(() => errorToast.classList.remove('show'), 3000);
+
+        } catch (e) {
+            alert("Failed to save configuration.");
+            console.error(e);
+        } finally {
+            saveSetupBtn.textContent = 'Connect & Save';
+            saveSetupBtn.disabled = false;
+        }
+    });
+
 
     async function handleSaveQuickAccess() {
         const name = qaNameInput.value.trim();

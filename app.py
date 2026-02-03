@@ -9,12 +9,29 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configuration
-API_URL = os.getenv("API_URL")
-DEFAULT_USER = os.getenv("DEFAULT_USER")
-DEFAULT_PASS = os.getenv("DEFAULT_PASS")
+import sys
 
+# PyInstaller Path Helper
+def get_base_path():
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    # If frozen (exe), use the executable's directory for data files (.env, .db)
+    # NOT _MEIPASS, because we want persistence.
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
 
-DATABASE = 'local_data.db'
+# Config Helper
+def get_config():
+    """Reloads config from .env each time"""
+    env_path = os.path.join(get_base_path(), '.env')
+    load_dotenv(env_path, override=True)
+    return {
+        'API_URL': os.getenv("API_URL"),
+        'DEFAULT_USER': os.getenv("DEFAULT_USER"),
+        'DEFAULT_PASS': os.getenv("DEFAULT_PASS")
+    }
+
+DATABASE = os.path.join(get_base_path(), 'local_data.db')
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -50,11 +67,10 @@ def init_db():
             )
         ''')
         
-        # Migration: Add sort_order if not exists
+            # Migration: Add sort_order if not exists
         try:
             db.execute('ALTER TABLE local_quick_access ADD COLUMN sort_order INTEGER DEFAULT 0')
         except sqlite3.OperationalError:
-            # Column likely already exists
             pass
 
         db.commit()
@@ -66,6 +82,71 @@ init_db()
 def home():
     return render_template('index.html')
 
+@app.route('/api/status', methods=['GET'])
+def get_status():
+    conf = get_config()
+    is_configured = all([conf['API_URL'], conf['DEFAULT_USER'], conf['DEFAULT_PASS']])
+    return jsonify({'configured': is_configured})
+
+@app.route('/api/setup', methods=['POST'])
+def setup_config():
+    data = request.json
+    api_url = data.get('api_url')
+    user = data.get('username')
+    password = data.get('password')
+    
+    if not all([api_url, user, password]):
+        return jsonify({'error': 'Missing fields'}), 400
+        
+    env_path = os.path.join(get_base_path(), '.env')
+    
+    # Check if .env exists, if not create it
+    if not os.path.exists(env_path):
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.write('') # Create empty file
+
+    # Write variables (Simple approach: Rewrite file or Replace lines)
+    # Since this is a simple app, we can just overwrite/rewrite for simplicity
+    # but to preserve comments, we might want to be careful. 
+    # For now, let's just write the 3 lines we need, ensuring they exist.
+    
+    lines = []
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+    new_lines = []
+    keys_written = set()
+    
+    for line in lines:
+        if line.startswith('API_URL='):
+            new_lines.append(f'API_URL="{api_url}"\n')
+            keys_written.add('API_URL')
+        elif line.startswith('DEFAULT_USER='):
+            new_lines.append(f'DEFAULT_USER="{user}"\n')
+            keys_written.add('DEFAULT_USER')
+        elif line.startswith('DEFAULT_PASS='):
+            new_lines.append(f'DEFAULT_PASS="{password}"\n')
+            keys_written.add('DEFAULT_PASS')
+        else:
+            new_lines.append(line)
+            
+    # Append if missing
+    if 'API_URL' not in keys_written:
+        new_lines.append(f'\nAPI_URL="{api_url}"\n')
+    if 'DEFAULT_USER' not in keys_written:
+        new_lines.append(f'DEFAULT_USER="{user}"\n')
+    if 'DEFAULT_PASS' not in keys_written:
+        new_lines.append(f'DEFAULT_PASS="{password}"\n')
+        
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
+        
+    # Reload immediately
+    load_dotenv(env_path, override=True)
+    
+    return jsonify({'status': 'saved'})
+
 @app.route('/api/execute', methods=['POST'])
 def execute_sql():
     data = request.json
@@ -75,12 +156,15 @@ def execute_sql():
         return jsonify({'error': 'No SQL provided'}), 400
 
     try:
-        # TODO: Move credentials to environment variables
+        conf = get_config()
+        if not conf['API_URL'] or not conf['DEFAULT_USER'] or not conf['DEFAULT_PASS']:
+             return jsonify({'error': 'System not configured. Please reload and run setup.'}), 401
+             
         # Use POST to ensure data modification commands (INSERT, UPDATE, DELETE) are committed.
         response = requests.post(
-            API_URL, 
+            conf['API_URL'], 
             json={'sql': sql},
-            auth=(DEFAULT_USER, DEFAULT_PASS)
+            auth=(conf['DEFAULT_USER'], conf['DEFAULT_PASS'])
         )
         
         # Try to parse JSON response from the API
