@@ -71,6 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!res.ok) throw new Error('Failed to save setup');
             return await res.json();
+        },
+        async getConnections() {
+            const res = await fetch('/api/connections');
+            return await res.json();
+        },
+        async saveConnection(name, apiUrl, username, password) {
+            const res = await fetch('/api/connections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, api_url: apiUrl, username, password })
+            });
+            if (!res.ok) throw new Error('Failed to save connection profile');
+        },
+        async deleteConnection(id) {
+            await fetch(`/api/connections/${id}`, { method: 'DELETE' });
         }
     };
 
@@ -479,10 +494,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseTableNameFromSQL(sql) {
         if (!sql) return null;
         // Match: SELECT ... FROM table_name
-        // Use [\s\S] instead of . to match newlines
-        // Updated regex to include dots for schema.table support
-        const match = sql.match(/SELECT[\s\S]+?FROM\s+[`]?([\w.-]+)[`]?/i);
-        return match ? match[1] : null;
+        // Supports: [Table Name], `Table Name`, "Table Name", TableName
+        const match = sql.match(/SELECT[\s\S]+?FROM\s+(?:\[([^\]]+)\]|`([^`]+)`|"([^"]+)"|([\w.-]+))/i);
+        if (match) {
+            return match[1] || match[2] || match[3] || match[4];
+        }
+        return null;
     }
 
     async function handleCellEdit(td, rowId, columnName, tableName, idColumnName) {
@@ -839,11 +856,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     saveSetupBtn.addEventListener('click', async () => {
+        const name = document.getElementById('setupName').value.trim();
         const apiUrl = document.getElementById('setupApiUrl').value.trim();
         const user = document.getElementById('setupUser').value.trim();
         const pass = document.getElementById('setupPass').value.trim();
 
-        if (!apiUrl || !user || !pass) {
+        if (!name || !apiUrl || !user || !pass) {
             alert("Please fill in all fields.");
             return;
         }
@@ -852,6 +870,10 @@ document.addEventListener('DOMContentLoaded', () => {
             saveSetupBtn.textContent = 'Connecting...';
             saveSetupBtn.disabled = true;
 
+            // 1. Save Profile
+            await API.saveConnection(name, apiUrl, user, pass);
+
+            // 2. Activate
             await API.saveSetup(apiUrl, user, pass);
 
             showSetupModal(false);
@@ -864,13 +886,63 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => errorToast.classList.remove('show'), 3000);
 
         } catch (e) {
-            alert("Failed to save configuration.");
+            alert("Failed to save configuration: " + e.message);
             console.error(e);
         } finally {
             saveSetupBtn.textContent = 'Connect & Save';
             saveSetupBtn.disabled = false;
         }
     });
+
+    // Load Connections into Dropdown
+    const savedConnSelect = document.getElementById('setupSavedConnections');
+    let loadedConnections = [];
+
+    async function loadSavedConnections() {
+        try {
+            loadedConnections = await API.getConnections();
+            savedConnSelect.innerHTML = '<option value="">-- New Connection --</option>';
+
+            loadedConnections.forEach(conn => {
+                const opt = document.createElement('option');
+                opt.value = conn.id;
+                opt.textContent = conn.name;
+                savedConnSelect.appendChild(opt);
+            });
+        } catch (e) {
+            console.error("Failed to load connections", e);
+        }
+    }
+
+    savedConnSelect.addEventListener('change', () => {
+        const id = parseInt(savedConnSelect.value);
+        if (!id) {
+            // New
+            document.getElementById('setupName').value = '';
+            document.getElementById('setupApiUrl').value = '';
+            document.getElementById('setupUser').value = '';
+            document.getElementById('setupPass').value = '';
+        } else {
+            const conn = loadedConnections.find(c => c.id === id);
+            if (conn) {
+                document.getElementById('setupName').value = conn.name;
+                document.getElementById('setupApiUrl').value = conn.api_url;
+                document.getElementById('setupUser').value = conn.username;
+                document.getElementById('setupPass').value = conn.password;
+            }
+        }
+    });
+
+    // Hook into showSetupModal to load connections
+    const originalShowSetupModal = showSetupModal;
+    showSetupModal = async function (show) {
+        if (show) {
+            await loadSavedConnections();
+            setupModal.classList.add('active');
+        } else {
+            setupModal.classList.remove('active');
+        }
+    }
 
 
     async function handleSaveQuickAccess() {

@@ -3,11 +3,15 @@ name: Build RCSL SQL Client EXE
 on:
   push:
     branches: [ "main" ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
@@ -33,3 +37,9 @@ jobs:
       with:
         name: RCSL-SQL-Client-EXE
         path: dist/RCSL-SQL-Client.exe
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/RCSL-SQL-Client.exe

@@ -19,6 +19,12 @@ Key features include:
 
 There are two ways to use this application: running the standalone executable or running from the source code.
 
+> [!WARNING]
+> **⚠️ 唯一要注意的限制 (權限問題)**
+> 因為我們的設定檔 (`.env`) 和資料庫 (`local_data.db`) 是存在程式同一個資料夾下。
+> **建議**：請把 `.exe` 放在 **桌面** 或 **我的文件** 這種有寫入權限的地方。
+> **避免**：不要直接放在 `C:\Program Files` 這種需要管理員權限的地方，否則可能會因為無法存檔而報錯。
+
 ### Method 1: Standalone Executable (Recommended)
 
 This method does not require Python to be installed on your system.

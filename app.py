@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, jsonify, g
 import requests
 import sqlite3
 import os
+import ctypes
+import sys
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,6 +22,27 @@ def get_base_path():
     if getattr(sys, 'frozen', False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
+
+def check_write_permission():
+    """Check if the directory is writable. If not, show error and exit."""
+    base_path = get_base_path()
+    test_file = os.path.join(base_path, '.perm_test')
+    try:
+        with open(test_file, 'w') as f:
+            f.write('test')
+        os.remove(test_file)
+    except (PermissionError, OSError):
+        # Only show GUI error if on Windows
+        if os.name == 'nt':
+            ctypes.windll.user32.MessageBoxW(
+                0, 
+                u"無法寫入檔案！\n\n請不要將此程式放在 'C:\\Program Files' 或其他受保護的資料夾。\n"
+                u"建議：請將 .exe 移至【桌面】或【我的文件】重新執行。", 
+                u"權限錯誤 (Permission Error)", 
+                0x10 | 0x1
+            )
+        print("CRITICAL: No write permission in directory. Exiting.")
+        sys.exit(1)
 
 # Config Helper
 def get_config():
@@ -64,6 +88,16 @@ def init_db():
                 sql_query TEXT NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 sort_order INTEGER DEFAULT 0
+            )
+        ''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS saved_connections (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                api_url TEXT NOT NULL,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
         
@@ -119,13 +153,13 @@ def setup_config():
     keys_written = set()
     
     for line in lines:
-        if line.startswith('API_URL='):
+        if re.match(r'^\s*API_URL\s*=', line):
             new_lines.append(f'API_URL="{api_url}"\n')
             keys_written.add('API_URL')
-        elif line.startswith('DEFAULT_USER='):
+        elif re.match(r'^\s*DEFAULT_USER\s*=', line):
             new_lines.append(f'DEFAULT_USER="{user}"\n')
             keys_written.add('DEFAULT_USER')
-        elif line.startswith('DEFAULT_PASS='):
+        elif re.match(r'^\s*DEFAULT_PASS\s*=', line):
             new_lines.append(f'DEFAULT_PASS="{password}"\n')
             keys_written.add('DEFAULT_PASS')
         else:
@@ -287,4 +321,50 @@ def delete_quick_access(id):
     return jsonify({'status': 'deleted'})
 
 if __name__ == '__main__':
+    check_write_permission()
     app.run(debug=True, port=5000)
+
+# Connection Profiles API
+@app.route('/api/connections', methods=['GET'])
+def get_connections():
+    db = get_db()
+    cur = db.execute('SELECT id, name, api_url, username, password FROM saved_connections ORDER BY created_at ASC')
+    return jsonify([dict(row) for row in cur.fetchall()])
+
+@app.route('/api/connections', methods=['POST'])
+def save_connection():
+    data = request.json
+    name = data.get('name')
+    api_url = data.get('api_url')
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not all([name, api_url, username, password]):
+        return jsonify({'error': 'Missing fields'}), 400
+        
+    db = get_db()
+    try:
+        existing = db.execute('SELECT id FROM saved_connections WHERE name = ?', (name,)).fetchone()
+        if existing:
+            db.execute('''
+                UPDATE saved_connections 
+                SET api_url=?, username=?, password=?
+                WHERE name=?
+            ''', (api_url, username, password, name))
+        else:
+            db.execute('''
+                INSERT INTO saved_connections (name, api_url, username, password)
+                VALUES (?, ?, ?, ?)
+            ''', (name, api_url, username, password))
+            
+        db.commit()
+        return jsonify({'status': 'saved'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/connections/<int:id>', methods=['DELETE'])
+def delete_connection(id):
+    db = get_db()
+    db.execute('DELETE FROM saved_connections WHERE id = ?', (id,))
+    db.commit()
+    return jsonify({'status': 'deleted'})

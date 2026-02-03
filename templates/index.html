@@ -152,10 +152,23 @@
                 <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
                     Welcome! Please configure the RCSL API connection to continue.
                 </p>
+
+                <div class="form-group"
+                    style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                    <label>Saved Connections</label>
+                    <select id="setupSavedConnections"
+                        style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary);">
+                        <option value="">-- New Connection --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Connection Name</label>
+                    <input type="text" id="setupName" placeholder="e.g. Production, Test Environment">
+                </div>
                 <div class="form-group">
                     <label>API URL</label>
-                    <input type="text" id="setupApiUrl" value="https://api.rcsl.online/sqlCommand"
-                        placeholder="https://...">
+                    <input type="text" id="setupApiUrl" placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label>Username (RCSL)</label>
