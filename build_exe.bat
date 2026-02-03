@@ -11,6 +11,13 @@ if %errorlevel% neq 0 (
     pip install pyinstaller
 )
 
+:: Check if Pillow is installed (for icon conversion)
+pip show Pillow > nul 2>&1
+if %errorlevel% neq 0 (
+    echo Installing Pillow...
+    pip install Pillow
+)
+
 :: Clean previous build
 if exist "dist" rmdir /s /q "dist"
 if exist "build" rmdir /s /q "build"
