@@ -1,59 +1,111 @@
 # RCSL SQL Client
 
-一個專為 RCSL 遠端資料庫設計的輕量級 SQL 客戶端。
-特別優化了使用體驗，讓不熟悉程式操作的用戶也能輕鬆上手。
+A lightweight, secure, and user-friendly SQL client designed specifically for interacting with the RCSL remote database API. This application wraps the raw API endpoints into a modern web interface, providing features like history tracking, quick access management, and an editable data grid.
 
-## 🚀 快速開始 (Quick Start)
+## Overview
 
-### 方法一：直接運行 (推薦)
-如果你拿到了 `RCSL-SQL-Client.exe` 檔案：
-1. 直接點擊該檔案。
-2. 瀏覽器會自動開啟。
-3. 如果是第一次使用，會跳出設定視窗，請輸入你的 RCSL 帳號密碼即可。
+The RCSL SQL Client abstracts the complexity of manually crafting API requests. It provides a local web server (Flask) that serves a responsive frontend, allowing users to execute SQL queries, view results in a formatted table, and manage their workflow efficiently.
 
-### 方法二：使用源代碼運行
-如果你是下載了整個資料夾：
+Key features include:
+- **Web-Based Interface**: A modern, clean interface accessible via any web browser.
+- **Secure Configuration**: Credentials are stored locally in a `.env` file and are never exposed in the source code or URL parameters.
+- **Setup Wizard**: A user-friendly graphical interface for initial configuration, eliminating the need to edit configuration files manually.
+- **Query History**: Automatically logs all executed queries locally for easy retrieval.
+- **Quick Access**: Allows users to save frequently used queries with custom names and reorder them via drag-and-drop.
+- **Editable Grid**: Supports inline editing, row duplication, and deletion for simple tables (automatically detected).
+- **Standalone Support**: Can be built into a single executable file for usage without a Python installation.
 
-1. **安裝 Python** (如果尚未安裝)
-   - 請至 [Python 官網](https://www.python.org/downloads/) 下載並安裝。
-   - **重要**：安裝時請務必勾選 **"Add Python to PATH"**。
+## Installation and Usage
 
-2. **啟動程式**
-   - 在資料夾中找到 `run.bat`。
-   - **連點兩下** 即可。
-   - 程式會自動安裝所需的套件並開啟網頁。
+There are two ways to use this application: running the standalone executable or running from the source code.
 
-3. **初始設定**
-   - 瀏覽器打開後，如果是第一次使用，會自動彈出「Initial Setup」視窗。
-   - 輸入 API 網址 (預設已填好)、帳號、密碼。
-   - 點擊 **Connect & Save**。
+### Method 1: Standalone Executable (Recommended)
 
----
+This method does not require Python to be installed on your system.
 
-## ✨ 主要功能
-- **網頁圖形介面**：不需要打指令，操作直觀。
-- **安全憑據管理**：帳號密碼只會保存在你電腦本地 (`.env`)，不會上傳。
-- **歷史紀錄 (History)**：自動儲存執行過的 SQL 指令。
-- **快速存取 (Quick Access)**：可儲存常用的 SQL 指令，支援拖拉排序。
-- **防止手殘**：刪除資料前會有確認提示。
+1.  **Download**: Obtain the `RCSL-SQL-Client.exe` file from the repository's Releases page or the `dist` folder if built locally.
+2.  **Run**: Double-click the executable file.
+3.  **Setup**:
+    -   The application will automatically open your default web browser.
+    -   On the first run, you will be presented with an "Initial Setup" modal.
+    -   Enter the API URL, your Username, and Password.
+    -   Click "Connect & Save".
+4.  **Usage**: You can now start writing and executing SQL queries.
 
-## 🛠️ 進階功能 (給開發者/進階用戶)
+### Method 2: Running from Source
 
-### 製作獨立執行檔 (.exe)
-如果你想把並且分享給朋友（讓他們不用安裝 Python），可以使用內建的打包腳本：
-1. 點擊 `build_exe.bat`。
-2. 等待程式跑完。
-3. 在 `dist` 資料夾中會生成一個 `RCSL-SQL-Client.exe`。
+This method requires Python installed on your system.
 
-### 手動運行
-如果你習慣使用終端機：
-```bash
-# 建立虛擬環境
-python -m venv venv
-# 啟動虛擬環境
-.\venv\Scripts\activate
-# 安裝依賴
-pip install -r requirements.txt
-# 執行
-python app.py
-```
+**Prerequisites:**
+-   Python 3.8 or higher
+-   Pip (Python Package Installer)
+
+**Steps:**
+1.  **Clone or Download**: Download the repository to your local machine.
+2.  **Launch**:
+    -   Navigate to the project folder.
+    -   Double-click the `run.bat` script.
+    -   The script will automatically set up a virtual environment, install necessary dependencies (`requirements.txt`), and launch the application.
+3.  **Configuration**: Follow the same on-screen Setup Wizard as described in Method 1.
+
+## Features in Detail
+
+### SQL Editor
+The main interface features a text area for inputting standard SQL queries.
+-   **Run Query**: Executes the SQL command against the remote API.
+-   **Clear**: Clears the editor content.
+-   Support for keyboard shortcuts (Ctrl+Enter to run).
+
+### Query History
+Every successfully executed query is saved to a local SQLite database (`local_data.db`).
+-   The history list is displayed in the sidebar.
+-   Clicking a history item inserts it back into the editor.
+-   Individual history items can be deleted.
+
+### Quick Access
+A section in the sidebar for storing favorite or complex queries.
+-   **Add**: Create a new Quick Access item with a custom name.
+-   **Edit**: Modify existing items.
+-   **Reorder**: Drag and drop items to organize your list.
+-   **Context**: Ideal for storing daily reports or complex JOIN queries.
+
+### Editable Grid
+When a `SELECT` query returns data from a single table and includes a unique `id` column, the application automatically enables "Edit Mode".
+-   **Inline Editing**: Click any cell to edit its value. Changes are saved immediately upon blurring the field (Enter or click away).
+-   **Add Row**: Click the "Add Row" button to insert a new record.
+-   **Duplicate**: Click the copy icon on a row to duplicate its data into a new insertion form.
+-   **Delete**: Click the trash icon to remove a row (requires confirmation).
+
+**Note**: Read-only mode is enforced for queries involving JOINs, lacking an ID column, or using aggregate functions.
+
+## Development and Building
+
+### Project Structure
+-   `app.py`: The main Flask backend application. Handles API requests and database logic.
+-   `static/`: Contains CSS, JavaScript, and asset files.
+    -   `script.js`: Frontend logic, API handling, and UI interactions.
+    -   `style.css`: Application styling.
+-   `templates/`: Contains HTML templates (`index.html`).
+-   `run.bat`: Helper script for one-click startup.
+-   `build_exe.bat`: Script to package the application using PyInstaller.
+
+### Building the Executable
+To create a standalone `.exe` file from the source code:
+
+1.  Ensure you have Python installed.
+2.  Double-click `build_exe.bat`.
+3.  The script will install `pyinstaller` and `Pillow` if missing.
+4.  It will package the application into a single file.
+5.  The output file `RCSL-SQL-Client.exe` will be located in the `dist` folder.
+
+### Continuous Integration
+This repository is configured with GitHub Actions.
+-   Every push to the `main` branch triggers an automated build workflow.
+-   The workflow sets up the environment, installs dependencies, and builds the executable.
+-   The resulting artifact is available for download in the Actions tab of the repository.
+
+## Troubleshooting
+
+-   **Application closes immediately**: Ensure no other application is using port 5000.
+-   **Configuration Error**: If you entered the wrong credentials, you can reset them by deleting the `.env` file in the application directory and restarting the program.
+-   **Build Failures**: Ensure you have internet access and write permissions in the directory when running `build_exe.bat`.
