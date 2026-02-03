@@ -5,6 +5,8 @@ import os
 import ctypes
 import sys
 import re
+import webbrowser
+import threading
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -338,7 +340,15 @@ def delete_quick_access(id):
 if __name__ == '__main__':
     try:
         check_write_permission()
-        app.run(debug=True, port=5000)
+        
+        # Open browser automatically
+        # Check if frozen (exe) or if this is the main process (not reloader) to avoid double open
+        if getattr(sys, 'frozen', False) or not os.environ.get("WERKZEUG_RUN_MAIN"):
+            threading.Timer(1.5, lambda: webbrowser.open('http://127.0.0.1:5000')).start()
+
+        # Disable debug in EXE to prevent reloader and other issues
+        isDebug = not getattr(sys, 'frozen', False)
+        app.run(debug=isDebug, port=5000)
     except Exception as e:
         import traceback
         error_msg = traceback.format_exc()
