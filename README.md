@@ -1,71 +1,58 @@
 # RCSL SQL Client
 
-A lightweight, local web-based SQL client designed to interface securely with the RCSL remote database API. This tool provides a convenient interface for executing queries, managing query history, and saving frequently used SQL commands.
+A lightweight SQL client designed for securely connecting to the RCSL remote database.
+Intended for users who may not be familiar with command-line operations, allowing you to get started in just a few steps.
 
-## Features
+## Quick Start
 
-- **Remote Execution**: Securely send SQL commands to the RCSL API.
-- **Local History**: Automatically saves executed queries to a local SQLite database for easy retrieval.
-- **Quick Access**: Save and categorize frequently used SQL snippets for rapid execution.
-- **Secure Configuration**: Uses environment variables to manage sensitive credentials, ensuring they are never hardcoded in the source code.
-- **User-Friendly Interface**: A clean web interface built with Flask and Vanilla JavaScript.
+### 1. Install Python (if not already installed)
+Please download and install Python (version 3.8 or higher is recommended).
+- **Download Link**: [Python Official Website](https://www.python.org/downloads/)
+- **Important**: During installation, make sure to check **"Add Python to PATH"** (as shown below), otherwise the script will not run.
+  ![Add to PATH](https://miro.medium.com/v2/resize:fit:1400/1*C5yUaWzP9qA1qQc9Qc9Qc9.png)
 
-## Prerequisites
+### 2. Download and Run
+1. Download this project (Click the green **Code** button -> **Download ZIP**) and extract it to your Desktop.
+2. Open the folder and find the `run.bat` file.
+3. **Double-click `run.bat`**.
 
-- Python 3.8 or higher
-- pip (Python package installer)
-
-## Installation
-
-1. Clone this repository to your local machine.
-2. Create value virtual environment (recommended):
-   ```bash
-   python -m venv venv
-   # Windows
-   .\venv\Scripts\activate
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-3. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Configuration
-
-1. Create a `.env` file in the root directory. You can use `.env.example` as a template:
-   ```bash
-   cp .env.example .env
-   ```
-2. Open `.env` and fill in your RCSL API credentials:
+### 3. Setup Credentials (First Run)
+If this is your first time running the program, it will automatically create a `.env` configuration file and ask you to pause.
+1. Open the `.env` file in the folder using Notepad.
+2. Enter your RCSL username and password:
    ```env
-   API_URL="https://example.com/api"
+   # .env file example
+   API_URL="https://api.rcsl.online/sqlCommand"
    DEFAULT_USER="your_username"
    DEFAULT_PASS="your_password"
    ```
+3. Save and close Notepad.
+4. Double-click `run.bat` again to start the application.
 
-   **Note:** The `.env` file is excluded from version control to protect your credentials.
+---
 
-## Usage
+## User Guide
+- Once started, the program will automatically open your browser and navigate to the interface.
+- **Do not close the black command window**, or the website will stop working.
+- To exit the program, simply close the command window.
 
-1. Start the application:
-   ```bash
-   python app.py
-   ```
-2. Open your web browser and navigate to:
-   ```
-   http://127.0.0.1:5000
-   ```
-3. Enter your SQL query in the text area and click "Execute".
+## Key Features
+- **Remote Connection**: Securely connect to the RCSL database to execute queries.
+- **History**: Automatically saves executed SQL commands for easy retrieval.
+- **Quick Access**: Save frequently used commands to the "Quick Access" list.
+- **Security**: Credentials are stored locally in the `.env` file and are never uploaded to the internet.
 
-## Project Structure
+---
 
-- `app.py`: Main Flask application entry point.
-- `debug_api.py`: Utility script for testing API connectivity and troubleshooting.
-- `static/`: Contains CSS and JavaScript files for the frontend.
-- `templates/`: Contains HTML templates.
-- `local_data.db`: Local SQLite database for storing history and quick access items (created on first run).
-
-## Security
-
-This application is designed to be run locally. Do not deploy this to a public server without adding authentication mechanisms (e.g., login functionality), as it allows arbitrary SQL execution on the configured database connection.
+## Advanced Usage (Developers)
+If you are familiar with the command line, you can also run it using the standard method:
+```bash
+# Create virtual environment
+python -m venv venv
+# Activate virtual environment (Windows)
+.\venv\Scripts\activate
+# Install dependencies
+pip install -r requirements.txt
+# Run application
+python app.py
+```
